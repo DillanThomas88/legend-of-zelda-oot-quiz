@@ -227,6 +227,10 @@ main {
 #noresults {
     display: none;
 }
+#highscore {
+    display: flex;
+    font-size: 2rem;
+}
 #results {
     z-index: 0;
     position: absolute;

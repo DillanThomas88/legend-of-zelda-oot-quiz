@@ -1,13 +1,15 @@
 // HTML Refs--------------------------------------------------
-const elStartButton = document.querySelector('#play')
+const startButtonEL = document.querySelector('#play')
 const mainEL = document.body.children[4]
 const cardHeaderEL = mainEL.children[1].children[0]
 const cardBodyEL = mainEL.children[1].children[1]
 const resultsEL = document.body.children[5]
-const formlistener = document.querySelector('#submitresults')
+const formlistenerEL = document.querySelector('#submitresults')
+const highScoreEL = document.querySelector('#highscore')
+const inputEL = document.querySelector('#name')
+console.log(inputEL)
 
-
-
+CheckForPlayerData()
 // Constant Arrays--------------------------------------------
 const questionIndex = [
     "What's the name of the Hyrulian Princess?",
@@ -220,11 +222,12 @@ var timeloss = 0
 var answerspeed = 0
 var elOptions = []
 //  Listeners--------------------------------------------------
-elStartButton.addEventListener('click', function () {
+startButtonEL.addEventListener('click', function () {
     var ELcard = document.querySelector('#inactive')
     ELcard.setAttribute('id', 'card-border')
-    elStartButton.style = 'display: none'
+    startButtonEL.style = 'display: none'
     ELcard.style = 'filter: none'
+    highScoreEL.style = "display: none"
     globalTimer = (questionIndex.length * 6) - 1
     isplaying = true
     GetHeader(cycle, GetBody)
@@ -232,9 +235,9 @@ elStartButton.addEventListener('click', function () {
 })
 
 //  Functions--------------------------------------------------
-function GetHeader(index, func){
-    if(cycle === questionIndex.length) { isplaying = false; return}
-    SetListeners()   
+function GetHeader(index, func) {
+    if (cycle === questionIndex.length) { isplaying = false; return }
+    SetListeners()
     // get header info
     cardHeaderEL.children[1].textContent = "Question " + (index + 1)
     cardHeaderEL.children[3].textContent = questionIndex[index]
@@ -242,7 +245,7 @@ function GetHeader(index, func){
     func(index)
     cycle++
 }
-function GetBody(index){    
+function GetBody(index) {
     var wrongAnswers = incorrectAnswerIndex[index]
     var slots = 4
     var usedSlots = []
@@ -251,103 +254,103 @@ function GetBody(index){
     // Generates a correct answer with random location 
     usedSlots.push(randomSlot)
     cardBodyEL.children[randomSlot].children[2].textContent = correctAnswerIndex[index]
-    cardBodyEL.children[randomSlot].children[2].setAttribute('data-type','true')
+    cardBodyEL.children[randomSlot].children[2].setAttribute('data-type', 'true')
     // pins the correct answer for listeners
     correctSlot = randomSlot
-    
+
     // a recurrsive fuction that generates 3 random wrong answers with random locations
-    GenerateWrongAnswers()  
-    function GenerateWrongAnswers(){
+    GenerateWrongAnswers()
+    function GenerateWrongAnswers() {
         // if all slots are full, then kill recurrsive function
-        if(usedSlots.length === 4){ return }
-        
+        if (usedSlots.length === 4) { return }
+
         var tryRandomNumber = Math.floor(Math.random() * slots)
 
         // check for repeated slots -- if yes, restart function
-        for(i = 0; i < usedSlots.length; i++){
-            if(tryRandomNumber === usedSlots[i]){ GenerateWrongAnswers(); return }
+        for (i = 0; i < usedSlots.length; i++) {
+            if (tryRandomNumber === usedSlots[i]) { GenerateWrongAnswers(); return }
         }
 
         // if no errors, create 1 wrong answer -- restart function
         var newrandom = Math.floor(Math.random() * wrongAnswers.length)
         usedSlots.push(tryRandomNumber)
         cardBodyEL.children[tryRandomNumber].children[2].textContent = wrongAnswers[newrandom]
-        cardBodyEL.children[tryRandomNumber].children[2].setAttribute('data-type','false')
-        wrongAnswers.splice(newrandom,1)
+        cardBodyEL.children[tryRandomNumber].children[2].setAttribute('data-type', 'false')
+        wrongAnswers.splice(newrandom, 1)
         GenerateWrongAnswers()
     }
 }
-function RevealAnswer(target,attribute){
+function RevealAnswer(target, attribute) {
 
-    if(attribute == 'false'){
+    if (attribute == 'false') {
         var wrongContent = target
         wrongContent.children[0].textContent = "incorrect"
-        wrongContent.setAttribute('class','incorrect')
-        for(i = 0; i < 4; i++){
+        wrongContent.setAttribute('class', 'incorrect')
+        for (i = 0; i < 4; i++) {
             var attr = cardBodyEL.children[i].children[2].getAttribute('data-type')
-            if(attr == 'true'){
+            if (attr == 'true') {
                 var rightContent = cardBodyEL.children[i]
-                rightContent.setAttribute('class','correct')
+                rightContent.setAttribute('class', 'correct')
                 cardBodyEL.children[i].children[0].textContent = "correct"
                 Buffer(rightContent, wrongContent)
-                
+
             }
         }
     } else {
         rightContent = target
         rightContent.children[0].textContent = "correct"
-        rightContent.setAttribute('class','correct')
+        rightContent.setAttribute('class', 'correct')
         Buffer(rightContent)
     }
-    
+
 }
-function Buffer(rightContent, wrongContent){
+function Buffer(rightContent, wrongContent) {
     ClearListeners()
     var time = 7
-    var buffer = setInterval(function(){
+    var buffer = setInterval(function () {
         time--
 
-        if(time === 0){
-            if(cycle == questionIndex.length){
+        if (time === 0) {
+            if (cycle == questionIndex.length) {
                 isplaying = false
                 Results()
                 ResetStyles(rightContent, wrongContent)
                 var ELcard = document.querySelector('#card-border')
                 ELcard.style.filter = "blur(15px)"
                 clearInterval(buffer)
-                 return
-                }
-            if(wrongContent == null){
+                return
+            }
+            if (wrongContent == null) {
                 ResetStyles(rightContent)
             } else { ResetStyles(rightContent, wrongContent) }
-            
+
             GetHeader(cycle, GetBody)
             clearInterval(buffer)
-            
+
         }
-    },100)
+    }, 100)
 
 }
-function ClearListeners(){
-    for(i = 0; i < cardBodyEL.childElementCount; i++){
+function ClearListeners() {
+    for (i = 0; i < cardBodyEL.childElementCount; i++) {
         cardBodyEL.children[i].removeEventListener('click', CheckIfTrue)
     }
 }
-function ResetStyles(rightContent, wrongContent ) {
+function ResetStyles(rightContent, wrongContent) {
     rightContent.children[0].textContent = "..."
     rightContent.setAttribute('class', 'nuetral')
 
-    if(wrongContent == null){ return }
-    
+    if (wrongContent == null) { return }
+
     wrongContent.children[0].textContent = "..."
-    wrongContent.setAttribute('class','nuetral')
+    wrongContent.setAttribute('class', 'nuetral')
 }
-function CheckIfTrue(event){
+function CheckIfTrue(event) {
     var element = event.target
     var attr = element.children[2].getAttribute('data-type')
-    if(attr == 'false'){
+    if (attr == 'false') {
         globalTimer = globalTimer - 4
-        if(globalTimer < 0){
+        if (globalTimer < 0) {
             globalTimer = 0
         }
         timeloss = timeloss + 4
@@ -356,65 +359,122 @@ function CheckIfTrue(event){
         answeredCorrectly++
     }
 
-    RevealAnswer(element,attr)
+    RevealAnswer(element, attr)
 }
 
-function SetListeners(){
-    var x = document.querySelectorAll('button')
-    for(i = 0; i < x.length; i++){
-        x[i].addEventListener('click', CheckIfTrue)
+function SetListeners() {
+    for (i = 0; i < cardBodyEL.childElementCount; i++) {
+        cardBodyEL.children[i].addEventListener('click', CheckIfTrue)
     }
 }
 
-function CountDownTimer(){
-var militime = 9
+function CountDownTimer() {
+    var militime = 9
 
     var timeEL = cardHeaderEL.children[2]
     timeEL.textContent = globalTimer + "." + militime
 
-    var timer = setInterval(function(){
+    var timer = setInterval(function () {
         militime--
         timeEL.textContent = globalTimer + "." + militime
-        if(militime < 0){
+        if (militime < 0) {
             militime = 9
             globalTimer--
             timeEL.textContent = globalTimer + "." + militime
         }
-        if(globalTimer < 10){
+        if (globalTimer < 10) {
             timeEL.style = "color: red"
         }
-        if(globalTimer == 0  && militime == 0){
+        if (globalTimer == 0 && militime == 0) {
             Results()
             var time = 0
             var ELcard = document.querySelector('#card-border')
             ELcard.style.filter = "blur(10px)"
             clearInterval(timer)
         }
-        if(isplaying == false){
-            
+        if (isplaying == false) {
+
             clearInterval(timer)
         }
-    },100)
+    }, 100)
 }
 
-function Results(){
+function Results() {
     var score = answeredCorrectly + answerspeed + Math.floor(globalTimer) - timeloss
-    resultsEL.setAttribute('id','results')
+    resultsEL.setAttribute('id', 'results')
     resultsEL.children[1].textContent = answeredCorrectly + " correct"
     resultsEL.children[2].textContent = (questionIndex.length - answeredCorrectly) + " incorrect"
     resultsEL.children[3].textContent = timeloss + " seconds lost"
     resultsEL.children[5].textContent = Math.floor(globalTimer) + " seconds remaining"
     resultsEL.children[4].textContent = "+" + answerspeed + " speed bonus"
     resultsEL.children[6].children[0].textContent = "You got " + score + " points!"
+    
     var playerscore = {
         Score: score,
         Correct: answeredCorrectly,
         Incorrect: questionIndex.length - answeredCorrectly,
         TimeLoss: timeloss,
         RemainingTime: Math.floor(globalTimer),
-        SpeedBonus: answerspeed
+        SpeedBonus: answerspeed,
+        playername: inputEL.value
     }
-    localStorage.removeItem('yourData')
-    localStorage.setItem('yourData',JSON.stringify(playerscore))
-    console.log('newHighScore')
+    if (localStorage.getItem('yourData') == null) {
+        resultsEL.children[0].textContent = "New High Score!"
+        formlistenerEL.addEventListener('click', function(event){
+            var playerscore = {
+                Score: score,
+                playername: inputEL.value,
+                Correct: answeredCorrectly,
+                Incorrect: questionIndex.length - answeredCorrectly,
+                TimeLoss: timeloss,
+                RemainingTime: Math.floor(globalTimer),
+                SpeedBonus: answerspeed,
+            }
+            localStorage.setItem('yourData', JSON.stringify(playerscore))    
+        })
+        console.log('new user')
+        return
+    }
+    var yourData = JSON.parse(localStorage.getItem('yourData'))
+    if (yourData.Score > score) {
+        console.log('not highscore')
+        resultsEL.children[6].children[1].children[0].style = "display:none"
+        resultsEL.children[6].children[1].children[1].style = "display:none"
+        resultsEL.children[6].children[1].children[2].textContent = "Return"
+        formlistenerEL.addEventListener('click', function(event){
+        })
+        return
+
+    } else {
+        console.log('new highscore')
+        resultsEL.children[0].textContent = "New High Score!"
+        resultsEL.children[0].style = "color: #2584f0"
+        resultsEL.children[6].children[1].children[0].style = "display:none"
+        resultsEL.children[6].children[1].children[1].style = "display:none"
+        resultsEL.children[6].children[1].children[2].textContent = "Return"
+        var yourData = JSON.parse(localStorage.getItem('yourData'))
+        localStorage.removeItem('yourData')
+        var playerscore = {
+            Score: score,
+            playername: yourData.playername,
+            Correct: answeredCorrectly,
+            Incorrect: questionIndex.length - answeredCorrectly,
+            TimeLoss: timeloss,
+            RemainingTime: Math.floor(globalTimer),
+            SpeedBonus: answerspeed,
+        }
+        localStorage.setItem('yourData', JSON.stringify(playerscore))    
+        formlistenerEL.addEventListener('click', function(event){
+        })
+    }
+}
+
+function CheckForPlayerData() {
+    if (localStorage.getItem('yourData') == null) {
+        highScoreEL.textContent = ""
+        return
+    }
+    var yourData = JSON.parse(localStorage.getItem('yourData'))
+    highScoreEL.textContent = yourData.playername+ "'s HighScore: " + yourData.Score
+
 }
